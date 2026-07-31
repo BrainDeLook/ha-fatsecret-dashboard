@@ -1,0 +1,12 @@
+{
+  "name": "ha-fatsecret-dashboard",
+  "version": "1.0.0",
+  "description": "A standalone FatSecret nutrition dashboard card for Home Assistant",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check": "node scripts/validate.mjs"
+  },
+  "license": "MIT"
+}
