@@ -6,7 +6,9 @@
 [`xplanes/ha-fatsecret`](https://github.com/xplanes/ha-fatsecret): калории,
 дневные цели, БЖУ, дополнительные нутриенты и график накопления за текущий день.
 
-![Карточка FatSecret Dashboard на русском языке](images/preview-ru.png)
+<p align="center">
+  <img src="images/preview-ru.png" alt="Карточка FatSecret Dashboard на русском языке">
+</p>
 
 ## Возможности
 
