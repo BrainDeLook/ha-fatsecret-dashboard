@@ -1,64 +1,68 @@
 # FatSecret Dashboard Card for Home Assistant
 
-Самостоятельная Lovelace-карточка для интеграции
-[`xplanes/ha-fatsecret`](https://github.com/xplanes/ha-fatsecret): калории,
-дневные цели, БЖУ, дополнительные нутриенты и график накопления за текущий день.
+> **Русская версия документации:** [README.ru.md](README.ru.md)
+
+A standalone Lovelace card for the
+[`xplanes/ha-fatsecret`](https://github.com/xplanes/ha-fatsecret) integration. It
+shows calories, daily goals, macronutrients, additional nutrients, and a daily
+calorie history chart.
 
 ![FatSecret Dashboard Card](images/preview.png)
 
-## Возможности
+## Features
 
-- устанавливается и обновляется через HACS;
-- не требует Mushroom, ApexCharts или других frontend-зависимостей;
-- автоматически использует стандартные entity ID интеграции `ha-fatsecret`;
-- имеет визуальный редактор в Home Assistant;
-- показывает выполнение целей по калориям, белку, жирам и углеводам;
-- строит суточный SVG-график калорий по истории Recorder;
-- открывает стандартный more-info при нажатии на любой показатель;
-- адаптируется к desktop и мобильной ширине;
-- автоматически использует русский или английский язык Home Assistant; для остальных языков применяется английский, а новые переводы добавляются через единый словарь;
-- использует цвета и фон активной темы Home Assistant.
+- installs and updates through HACS;
+- requires no Mushroom, ApexCharts, or other frontend dependencies;
+- automatically uses the standard entity IDs provided by `ha-fatsecret`;
+- includes a visual editor in Home Assistant;
+- displays progress toward calorie, protein, fat, and carbohydrate goals;
+- builds a daily SVG calorie chart from Recorder history;
+- opens the standard more-info dialog when a metric is selected;
+- works in desktop and narrow dashboard columns without changing the horizontal macro layout;
+- follows the Home Assistant interface language for Russian and English, with English as the fallback for other languages;
+- uses the colors and background of the active Home Assistant theme.
 
-## Требования
+## Requirements
 
-- установленная и настроенная интеграция
-  [`xplanes/ha-fatsecret`](https://github.com/xplanes/ha-fatsecret);
-- Home Assistant 2024.4 или новее;
-- HACS для автоматической установки.
+- an installed and configured
+  [`xplanes/ha-fatsecret`](https://github.com/xplanes/ha-fatsecret) integration;
+- Home Assistant 2024.4 or newer;
+- HACS for automatic installation and updates.
 
-## Установка через HACS
+## Installation through HACS
 
-[![Открыть репозиторий в HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=BrainDeLook&repository=ha-fatsecret-dashboard&category=plugin)
+[![Open the repository in HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=BrainDeLook&repository=ha-fatsecret-dashboard&category=plugin)
 
-Или вручную:
+Alternatively, add it manually:
 
-1. Откройте **HACS → Dashboard**.
-2. В меню выберите **Custom repositories**.
-3. Добавьте `https://github.com/BrainDeLook/ha-fatsecret-dashboard` с типом **Dashboard**.
-4. Найдите **FatSecret Dashboard Card** и нажмите **Download**.
-5. Обновите страницу Home Assistant с очисткой кэша браузера.
+1. Open **HACS → Dashboard**.
+2. Open the menu and select **Custom repositories**.
+3. Add `https://github.com/BrainDeLook/ha-fatsecret-dashboard` with the **Dashboard** type.
+4. Find **FatSecret Dashboard Card** and select **Download**.
+5. Reload Home Assistant and clear the browser cache if the old card is still displayed.
 
-HACS устанавливает ресурс `ha-fatsecret-dashboard.js` автоматически.
+HACS installs the `ha-fatsecret-dashboard.js` resource automatically.
 
-## Добавление карточки
+## Adding the card
 
-Откройте нужный дашборд, нажмите **Edit dashboard → Add card** и выберите
-**FatSecret Dashboard**. Стандартные entity ID и цели уже заполнены; их можно
-изменить в визуальном редакторе.
+Open the desired dashboard, select **Edit dashboard → Add card**, and choose
+**FatSecret Dashboard**. The standard entity IDs and goals are prefilled and
+can be changed in the visual editor.
 
-Минимальная YAML-конфигурация:
+Minimal YAML configuration:
 
 ```yaml
 type: custom:fatsecret-dashboard-card
 ```
 
-Если `title` не задан, заголовок автоматически переводится вместе с интерфейсом Home Assistant. Язык берётся из настроек пользователя Home Assistant (`ru` или `en`). Пользовательский `title` всегда показывается без изменений.
+When `title` is not set, the card title follows the Home Assistant interface
+language (`ru` or `en`). A custom `title` is always displayed as entered.
 
-Полный пример:
+Full example:
 
 ```yaml
 type: custom:fatsecret-dashboard-card
-title: Питание сегодня
+title: Nutrition today
 calories_entity: sensor.calories
 protein_entity: sensor.protein
 carbohydrate_entity: sensor.carbohydrates
@@ -76,34 +80,34 @@ show_graph: true
 show_details: true
 ```
 
-Home Assistant может добавить суффикс вроде `_2`, если entity ID уже занят.
-В этом случае выберите фактические сущности через визуальный редактор карточки.
+Home Assistant may append a suffix such as `_2` when an entity ID is already
+in use. In that case, select the actual entities in the card's visual editor.
 
-## График
+## Daily chart
 
-Карточка запрашивает краткосрочную историю `sensor.calories` напрямую из
-Recorder через WebSocket API Home Assistant. Убедитесь, что сенсор калорий не
-исключён из Recorder. Если история недоступна, остальные показатели продолжат
-работать.
+The card requests the short-term history of `sensor.calories` directly from
+Home Assistant Recorder through the WebSocket API. Make sure the calorie sensor
+is not excluded from Recorder. Other metrics continue to work if history is
+unavailable.
 
-## Дополнительные YAML helpers
+## Optional YAML helpers
 
-Файл [`packages/fatsecret.yaml`](packages/fatsecret.yaml) оставлен как
-опциональный пример редактируемых helpers и template-сенсоров прогресса. Для
-работы самой HACS-карточки он не нужен.
+[`packages/fatsecret.yaml`](packages/fatsecret.yaml) is an optional example of
+editable helpers and template sensors for progress values. It is not required
+by the HACS card.
 
-Исходная составная версия на стандартных/custom Lovelace-карточках находится в
-[`dashboards/fatsecret-card.yaml`](dashboards/fatsecret-card.yaml).
+The original composite version based on standard/custom Lovelace cards is
+available at [`dashboards/fatsecret-card.yaml`](dashboards/fatsecret-card.yaml).
 
-## Разработка
+## Development
 
 ```bash
 npm run build
 npm run check
 ```
 
-Тестовый стенд: [`tests/preview.html`](tests/preview.html).
+Local preview: [`tests/preview.html`](tests/preview.html).
 
-## Лицензия
+## License
 
 [MIT](LICENSE)
