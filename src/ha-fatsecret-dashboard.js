@@ -1,4 +1,4 @@
-const CARD_VERSION = "1.1.0";
+const CARD_VERSION = "1.1.1";
 const BRAND_GREEN = "#69be45";
 
 const DEFAULT_CONFIG = Object.freeze({
@@ -246,7 +246,7 @@ class FatSecretDashboardCard extends HTMLElement {
   }
 
   getCardSize() {
-    let size = 7;
+    let size = 5;
     if (this._config?.show_graph !== false) size += 4;
     if (this._config?.show_details !== false) size += 2;
     return size;
@@ -515,7 +515,7 @@ class FatSecretDashboardCard extends HTMLElement {
 
   _styles() {
     return `
-      :host { display:block; container-type:inline-size; --accent:${BRAND_GREEN}; }
+      :host { display:block; --accent:${BRAND_GREEN}; }
       * { box-sizing:border-box; }
       ha-card { display:block; overflow:hidden; background:var(--ha-card-background, var(--card-background-color, #fff)); border-radius:18px; box-shadow:0 3px 18px rgba(20,25,34,.10); }
       .card-content { padding:22px; color:var(--primary-text-color); font-family:var(--paper-font-body1_-_font-family, sans-serif); }
@@ -549,14 +549,6 @@ class FatSecretDashboardCard extends HTMLElement {
       .detail strong { margin-top:4px; font-size:13px; }
       button:hover { filter:brightness(.98); }
       button:focus-visible { outline:2px solid var(--primary-color); outline-offset:2px; }
-      @container (max-width:520px) {
-        .card-content { padding:16px; }
-        h2 { font-size:20px; }
-        .calorie-ring { width:100px; height:100px; flex-basis:100px; }
-        .calorie-ring strong { font-size:21px; }
-        .macros { grid-template-columns:1fr; }
-        .details { grid-template-columns:repeat(2, 1fr); }
-      }
     `;
   }
 }

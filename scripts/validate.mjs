@@ -17,7 +17,7 @@ for (const marker of [
   "window.customCards",
   "history/history_during_period",
   "const TRANSLATIONS",
-  "container-type:inline-size",
+  "grid-template-columns:repeat(3, 1fr)",
 ]) {
   if (!source.includes(marker)) {
     throw new Error(`Missing expected artifact marker: ${marker}`);
@@ -29,6 +29,9 @@ if (!source.includes("en: Object.freeze") || !source.includes("ru: Object.freeze
 }
 if (source.includes("#ff9f43")) {
   throw new Error("Legacy orange accent is still present");
+}
+if (source.includes(".macros { grid-template-columns:1fr; }")) {
+  throw new Error("Macronutrients must stay in one horizontal row");
 }
 if (!source.includes(`const CARD_VERSION = "${packageMetadata.version}"`)) {
   throw new Error("Card and package versions must match");
