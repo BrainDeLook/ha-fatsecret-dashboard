@@ -11,7 +11,7 @@
         --card-background-color: #fff;
         --secondary-background-color: #f0f2f5;
         --divider-color: #dde1e7;
-        --primary-color: #ff9f43;
+        --primary-color: #69be45;
       }
       body {
         margin: 0;
@@ -29,8 +29,10 @@
   </head>
   <body>
     <fatsecret-dashboard-card></fatsecret-dashboard-card>
-    <script type="module" src="../dist/ha-fatsecret-dashboard.js"></script>
+    <script type="module" src="../dist/ha-fatsecret-dashboard.js?v=1.1.0"></script>
     <script type="module">
+      const language = new URLSearchParams(location.search).get("lang") || "ru";
+      document.documentElement.lang = language;
       const now = new Date();
       const at = (hour, minute, state) => {
         const date = new Date(now);
@@ -45,7 +47,8 @@
       const card = document.querySelector("fatsecret-dashboard-card");
       card.setConfig({});
       card.hass = {
-        locale: { language: "ru" },
+        locale: { language },
+        language,
         states: {
           "sensor.calories": state(1486, "kcal"),
           "sensor.protein": state(118, "g"),

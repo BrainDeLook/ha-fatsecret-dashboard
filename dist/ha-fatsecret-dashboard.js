@@ -1,7 +1,8 @@
-const CARD_VERSION = "1.0.0";
+const CARD_VERSION = "1.1.0";
+const BRAND_GREEN = "#69be45";
 
 const DEFAULT_CONFIG = Object.freeze({
-  title: "Питание сегодня",
+  title: "",
   calories_entity: "sensor.calories",
   protein_entity: "sensor.protein",
   carbohydrate_entity: "sensor.carbohydrates",
@@ -19,24 +20,111 @@ const DEFAULT_CONFIG = Object.freeze({
   show_details: true,
 });
 
-const LABELS = Object.freeze({
-  title: "Заголовок",
-  calories_entity: "Калории",
-  protein_entity: "Белок",
-  carbohydrate_entity: "Углеводы",
-  fat_entity: "Жиры",
-  fiber_entity: "Клетчатка",
-  sugar_entity: "Сахар",
-  sodium_entity: "Натрий",
-  potassium_entity: "Калий",
-  cholesterol_entity: "Холестерин",
-  calorie_goal: "Цель калорий, ккал",
-  protein_goal: "Цель белка, г",
-  carbohydrate_goal: "Цель углеводов, г",
-  fat_goal: "Цель жиров, г",
-  show_graph: "Показывать график",
-  show_details: "Показывать нутриенты",
+const TRANSLATIONS = Object.freeze({
+  en: Object.freeze({
+    title: "Nutrition today",
+    config: Object.freeze({
+      title: "Title",
+      calories_entity: "Calories",
+      protein_entity: "Protein",
+      carbohydrate_entity: "Carbohydrates",
+      fat_entity: "Fat",
+      fiber_entity: "Fiber",
+      sugar_entity: "Sugar",
+      sodium_entity: "Sodium",
+      potassium_entity: "Potassium",
+      cholesterol_entity: "Cholesterol",
+      calorie_goal: "Calorie goal, kcal",
+      protein_goal: "Protein goal, g",
+      carbohydrate_goal: "Carbohydrate goal, g",
+      fat_goal: "Fat goal, g",
+      show_graph: "Show graph",
+      show_details: "Show nutrients",
+      details: "Additional nutrients",
+    }),
+    macros: Object.freeze({
+      protein: "Protein",
+      carbohydrates: "Carbohydrates",
+      fat: "Fat",
+    }),
+    nutrients: Object.freeze({
+      fiber: "Fiber",
+      sugar: "Sugar",
+      sodium: "Sodium",
+      potassium: "Potassium",
+      cholesterol: "Cholesterol",
+    }),
+    units: Object.freeze({ kcal: "kcal", g: "g", mg: "mg", ug: "µg" }),
+    noData: "No FatSecret data",
+    remaining: (value) => `${value} kcal remaining`,
+    exceeded: (value) => `Exceeded by ${value} kcal`,
+    goalValue: (goal) => `of ${goal} kcal`,
+    goalProgress: (progress) => `${progress}% of goal`,
+    noValue: "No data",
+    caloriesAria: "Open calorie details",
+    macrosAria: "Macronutrients",
+    graphTitle: "Calories today",
+    graphRange: "00:00 — now",
+    graphLoading: "Loading…",
+    graphAria: "Calories graph for today",
+    cardDescription: "FatSecret calories, macros, nutrients, and daily graph.",
+  }),
+  ru: Object.freeze({
+    title: "Питание сегодня",
+    config: Object.freeze({
+      title: "Заголовок",
+      calories_entity: "Калории",
+      protein_entity: "Белок",
+      carbohydrate_entity: "Углеводы",
+      fat_entity: "Жиры",
+      fiber_entity: "Клетчатка",
+      sugar_entity: "Сахар",
+      sodium_entity: "Натрий",
+      potassium_entity: "Калий",
+      cholesterol_entity: "Холестерин",
+      calorie_goal: "Цель калорий, ккал",
+      protein_goal: "Цель белка, г",
+      carbohydrate_goal: "Цель углеводов, г",
+      fat_goal: "Цель жиров, г",
+      show_graph: "Показывать график",
+      show_details: "Показывать нутриенты",
+      details: "Дополнительные нутриенты",
+    }),
+    macros: Object.freeze({
+      protein: "Белок",
+      carbohydrates: "Углеводы",
+      fat: "Жиры",
+    }),
+    nutrients: Object.freeze({
+      fiber: "Клетчатка",
+      sugar: "Сахар",
+      sodium: "Натрий",
+      potassium: "Калий",
+      cholesterol: "Холестерин",
+    }),
+    units: Object.freeze({ kcal: "ккал", g: "г", mg: "мг", ug: "мкг" }),
+    noData: "Нет данных от FatSecret",
+    remaining: (value) => `Осталось ${value} ккал`,
+    exceeded: (value) => `Превышение на ${value} ккал`,
+    goalValue: (goal) => `из ${goal} ккал`,
+    goalProgress: (progress) => `${progress}% цели`,
+    noValue: "Нет данных",
+    caloriesAria: "Открыть сведения о калориях",
+    macrosAria: "Макронутриенты",
+    graphTitle: "Калории за сегодня",
+    graphRange: "00:00 — сейчас",
+    graphLoading: "Загрузка…",
+    graphAria: "График калорий за сегодня",
+    cardDescription: "Калории, БЖУ, нутриенты и график FatSecret за текущий день.",
+  }),
 });
+
+const normalizeLanguage = (language) => String(language ?? "en").toLowerCase().split(/[-_]/)[0];
+
+const translationFor = (language) => TRANSLATIONS[normalizeLanguage(language)] ?? TRANSLATIONS.en;
+
+const browserTranslation = () =>
+  translationFor(document.documentElement.lang || navigator.language || "en");
 
 const ENTITY_FIELDS = [
   "calories_entity",
@@ -86,6 +174,7 @@ class FatSecretDashboardCard extends HTMLElement {
   }
 
   static getConfigForm() {
+    const strings = browserTranslation();
     const entitySelector = (name) => ({
       name,
       selector: { entity: { domain: "sensor" } },
@@ -116,7 +205,7 @@ class FatSecretDashboardCard extends HTMLElement {
         {
           type: "expandable",
           name: "details",
-          title: "Дополнительные нутриенты",
+          title: strings.config.details,
           flatten: true,
           schema: [
             entitySelector("fiber_entity"),
@@ -129,7 +218,7 @@ class FatSecretDashboardCard extends HTMLElement {
         { name: "show_graph", selector: { boolean: {} } },
         { name: "show_details", selector: { boolean: {} } },
       ],
-      computeLabel: (schema) => LABELS[schema.name] ?? schema.name,
+      computeLabel: (schema) => strings.config[schema.name] ?? schema.name,
     };
   }
 
@@ -157,24 +246,49 @@ class FatSecretDashboardCard extends HTMLElement {
   }
 
   getCardSize() {
-    return this._config?.show_graph === false ? 5 : 7;
+    let size = 7;
+    if (this._config?.show_graph !== false) size += 4;
+    if (this._config?.show_details !== false) size += 2;
+    return size;
   }
 
   getGridOptions() {
-    return { columns: 12, min_columns: 6, rows: 7, min_rows: 5 };
+    return {
+      columns: 12,
+      min_columns: 6,
+      rows: this.getCardSize(),
+      min_rows: 6,
+    };
   }
 
   _state(entityId) {
     return this._hass?.states?.[entityId];
   }
 
+  _language() {
+    return this._hass?.locale?.language ?? this._hass?.language ?? navigator.language ?? "en";
+  }
+
+  _t() {
+    return translationFor(this._language());
+  }
+
+  _localizeUnit(unit) {
+    const normalized = String(unit ?? "")
+      .trim()
+      .toLowerCase()
+      .replace("µ", "u")
+      .replace("μ", "u");
+    return this._t().units[normalized] ?? unit;
+  }
+
   _format(entityId, fallbackUnit = "") {
     const state = this._state(entityId);
     const value = numberValue(state);
     if (value === null) return "—";
-    const unit = state.attributes?.unit_of_measurement ?? fallbackUnit;
+    const unit = this._localizeUnit(state.attributes?.unit_of_measurement ?? fallbackUnit);
     const digits = Math.abs(value) >= 100 ? 0 : 1;
-    return `${value.toLocaleString(this._hass?.locale?.language, {
+    return `${value.toLocaleString(this._language(), {
       maximumFractionDigits: digits,
     })}${unit ? ` ${unit}` : ""}`;
   }
@@ -197,6 +311,7 @@ class FatSecretDashboardCard extends HTMLElement {
       history: this._history.length,
       lastHistory: this._history.at(-1)?.value,
       loading: this._historyLoading,
+      language: normalizeLanguage(this._language()),
     });
   }
 
@@ -205,6 +320,7 @@ class FatSecretDashboardCard extends HTMLElement {
     const signature = this._signature();
     if (signature === this._renderSignature) return;
     this._renderSignature = signature;
+    const t = this._t();
 
     const calories = numberValue(this._state(this._config.calories_entity));
     const goal = Number(this._config.calorie_goal) || 1;
@@ -212,26 +328,26 @@ class FatSecretDashboardCard extends HTMLElement {
     const calorieProgress = ((calories ?? 0) / goal) * 100;
     const status =
       calories === null
-        ? "Нет данных от FatSecret"
+        ? t.noData
         : remaining >= 0
-          ? `Осталось ${Math.round(remaining)} ккал`
-          : `Превышение на ${Math.round(Math.abs(remaining))} ккал`;
+          ? t.remaining(Math.round(remaining))
+          : t.exceeded(Math.round(Math.abs(remaining)));
 
     const macros = [
       {
-        label: "Белок",
+        label: t.macros.protein,
         entity: this._config.protein_entity,
         goal: Number(this._config.protein_goal),
         color: "#39b86b",
       },
       {
-        label: "Углеводы",
+        label: t.macros.carbohydrates,
         entity: this._config.carbohydrate_entity,
         goal: Number(this._config.carbohydrate_goal),
         color: "#3a8dde",
       },
       {
-        label: "Жиры",
+        label: t.macros.fat,
         entity: this._config.fat_entity,
         goal: Number(this._config.fat_goal),
         color: "#e95d8f",
@@ -239,11 +355,11 @@ class FatSecretDashboardCard extends HTMLElement {
     ];
 
     const details = [
-      ["Клетчатка", this._config.fiber_entity],
-      ["Сахар", this._config.sugar_entity],
-      ["Натрий", this._config.sodium_entity],
-      ["Калий", this._config.potassium_entity],
-      ["Холестерин", this._config.cholesterol_entity],
+      [t.nutrients.fiber, this._config.fiber_entity],
+      [t.nutrients.sugar, this._config.sugar_entity],
+      [t.nutrients.sodium, this._config.sodium_entity],
+      [t.nutrients.potassium, this._config.potassium_entity],
+      [t.nutrients.cholesterol, this._config.cholesterol_entity],
     ];
 
     this.shadowRoot.innerHTML = `
@@ -253,18 +369,18 @@ class FatSecretDashboardCard extends HTMLElement {
           <header>
             <div>
               <div class="eyebrow">FATSECRET</div>
-              <h2>${escapeHtml(this._config.title)}</h2>
+              <h2>${escapeHtml(this._config.title?.trim() || t.title)}</h2>
               <p>${escapeHtml(status)}</p>
             </div>
             <button class="calorie-ring" data-entity="${escapeHtml(this._config.calories_entity)}"
               style="--progress:${clamp(calorieProgress, 0, 100)}%"
-              aria-label="Открыть сведения о калориях">
+              aria-label="${escapeHtml(t.caloriesAria)}">
               <strong>${calories === null ? "—" : Math.round(calories)}</strong>
-              <span>из ${Math.round(goal)} ккал</span>
+              <span>${escapeHtml(t.goalValue(Math.round(goal)))}</span>
             </button>
           </header>
 
-          <section class="macros" aria-label="Макронутриенты">
+          <section class="macros" aria-label="${escapeHtml(t.macrosAria)}">
             ${macros.map((macro) => this._macroTemplate(macro)).join("")}
           </section>
 
@@ -290,20 +406,22 @@ class FatSecretDashboardCard extends HTMLElement {
   }
 
   _macroTemplate({ label, entity, goal, color }) {
+    const t = this._t();
     const value = numberValue(this._state(entity));
     const progress = value === null || !goal ? 0 : (value / goal) * 100;
     return `
       <button class="macro" data-entity="${escapeHtml(entity)}" style="--macro-color:${color}">
         <div class="macro-top">
           <span>${escapeHtml(label)}</span>
-          <strong>${value === null ? "—" : `${Math.round(value)} / ${Math.round(goal)} г`}</strong>
+          <strong>${value === null ? "—" : `${Math.round(value)} / ${Math.round(goal)} ${t.units.g}`}</strong>
         </div>
         <div class="track"><i style="width:${clamp(progress, 0, 100)}%"></i></div>
-        <small>${value === null ? "нет данных" : `${Math.round(progress)}% цели`}</small>
+        <small>${value === null ? escapeHtml(t.noValue) : escapeHtml(t.goalProgress(Math.round(progress)))}</small>
       </button>`;
   }
 
   _graphTemplate(currentValue, goal) {
+    const t = this._t();
     const width = 640;
     const height = 150;
     const left = 8;
@@ -327,19 +445,19 @@ class FatSecretDashboardCard extends HTMLElement {
     return `
       <section class="graph">
         <div class="section-title">
-          <span>Калории за сегодня</span>
-          <small>${this._historyLoading ? "загрузка…" : "00:00 — сейчас"}</small>
+          <span>${escapeHtml(t.graphTitle)}</span>
+          <small>${escapeHtml(this._historyLoading ? t.graphLoading : t.graphRange)}</small>
         </div>
-        <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="График калорий за сегодня">
+        <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(t.graphAria)}">
           <defs>
             <linearGradient id="fatsecret-area" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#ff9f43" stop-opacity=".36" />
-              <stop offset="1" stop-color="#ff9f43" stop-opacity="0" />
+              <stop offset="0" stop-color="${BRAND_GREEN}" stop-opacity=".36" />
+              <stop offset="1" stop-color="${BRAND_GREEN}" stop-opacity="0" />
             </linearGradient>
           </defs>
           <line class="goal-line" x1="${left}" x2="${width - left}" y1="${goalY}" y2="${goalY}" />
           <polygon points="${area}" fill="url(#fatsecret-area)" />
-          <polyline points="${line}" fill="none" stroke="#ff9f43" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+          <polyline points="${line}" fill="none" stroke="${BRAND_GREEN}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
         </svg>
       </section>`;
   }
@@ -397,7 +515,7 @@ class FatSecretDashboardCard extends HTMLElement {
 
   _styles() {
     return `
-      :host { display:block; --accent:#ff9f43; }
+      :host { display:block; container-type:inline-size; --accent:${BRAND_GREEN}; }
       * { box-sizing:border-box; }
       ha-card { display:block; overflow:hidden; background:var(--ha-card-background, var(--card-background-color, #fff)); border-radius:18px; box-shadow:0 3px 18px rgba(20,25,34,.10); }
       .card-content { padding:22px; color:var(--primary-text-color); font-family:var(--paper-font-body1_-_font-family, sans-serif); }
@@ -431,7 +549,7 @@ class FatSecretDashboardCard extends HTMLElement {
       .detail strong { margin-top:4px; font-size:13px; }
       button:hover { filter:brightness(.98); }
       button:focus-visible { outline:2px solid var(--primary-color); outline-offset:2px; }
-      @media (max-width:600px) {
+      @container (max-width:520px) {
         .card-content { padding:16px; }
         h2 { font-size:20px; }
         .calorie-ring { width:100px; height:100px; flex-basis:100px; }
@@ -452,12 +570,12 @@ window.customCards.push({
   type: "fatsecret-dashboard-card",
   name: "FatSecret Dashboard",
   preview: true,
-  description: "Калории, БЖУ, нутриенты и график FatSecret за текущий день.",
+  description: browserTranslation().cardDescription,
   documentationURL: "https://github.com/BrainDeLook/ha-fatsecret-dashboard",
 });
 
 console.info(
   `%c FATSECRET-DASHBOARD %c v${CARD_VERSION} `,
-  "background:#ff9f43;color:#111;font-weight:700;padding:3px 6px;border-radius:4px 0 0 4px",
+  `background:${BRAND_GREEN};color:#111;font-weight:700;padding:3px 6px;border-radius:4px 0 0 4px`,
   "background:#272727;color:#fff;padding:3px 6px;border-radius:0 4px 4px 0",
 );
