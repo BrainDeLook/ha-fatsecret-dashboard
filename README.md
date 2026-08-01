@@ -7,7 +7,7 @@ A standalone Lovelace card for the
 shows calories, daily goals, macronutrients, additional nutrients, and a daily
 calorie history chart.
 
-![FatSecret Dashboard Card](images/preview.png)
+![FatSecret Dashboard Card in English](images/preview-en.png)
 
 ## Features
 
