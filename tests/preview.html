@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FatSecret Dashboard Preview</title>
+    <style>
+      :root {
+        --primary-text-color: #20242c;
+        --secondary-text-color: #707784;
+        --card-background-color: #fff;
+        --secondary-background-color: #f0f2f5;
+        --divider-color: #dde1e7;
+        --primary-color: #ff9f43;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        padding: 24px;
+        background: #e9edf2;
+        font-family: Inter, system-ui, sans-serif;
+      }
+      fatsecret-dashboard-card {
+        display: block;
+        width: 780px;
+        max-width: calc(100vw - 48px);
+      }
+    </style>
+  </head>
+  <body>
+    <fatsecret-dashboard-card></fatsecret-dashboard-card>
+    <script type="module" src="../dist/ha-fatsecret-dashboard.js"></script>
+    <script type="module">
+      const now = new Date();
+      const at = (hour, minute, state) => {
+        const date = new Date(now);
+        date.setHours(hour, minute, 0, 0);
+        return { state: String(state), last_updated: date.toISOString() };
+      };
+      const state = (value, unit) => ({
+        state: String(value),
+        attributes: { unit_of_measurement: unit },
+        last_updated: now.toISOString(),
+      });
+      const card = document.querySelector("fatsecret-dashboard-card");
+      card.setConfig({});
+      card.hass = {
+        locale: { language: "ru" },
+        states: {
+          "sensor.calories": state(1486, "kcal"),
+          "sensor.protein": state(118, "g"),
+          "sensor.carbohydrates": state(172, "g"),
+          "sensor.fat": state(49, "g"),
+          "sensor.fiber": state(24, "g"),
+          "sensor.sugar": state(38, "g"),
+          "sensor.sodium": state(1420, "mg"),
+          "sensor.potassium": state(2610, "mg"),
+          "sensor.cholesterol": state(184, "mg"),
+        },
+        callWS: async () => ({
+          "sensor.calories": [
+            at(7, 30, 320),
+            at(10, 15, 510),
+            at(13, 10, 980),
+            at(16, 20, 1160),
+            at(19, 15, 1486),
+          ],
+        }),
+      };
+    </script>
+  </body>
+</html>

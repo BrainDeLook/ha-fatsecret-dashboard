@@ -1,47 +1,105 @@
-# FatSecret Dashboard for Home Assistant
+# FatSecret Dashboard Card for Home Assistant
 
-Информативная Lovelace-карточка для интеграции
-[`xplanes/ha-fatsecret`](https://github.com/xplanes/ha-fatsecret): дневные цели,
-прогресс калорий и БЖУ, подробные нутриенты и график накопления за день.
+Самостоятельная Lovelace-карточка для интеграции
+[`xplanes/ha-fatsecret`](https://github.com/xplanes/ha-fatsecret): калории,
+дневные цели, БЖУ, дополнительные нутриенты и график накопления за текущий день.
 
-Готовый комплект состоит из двух файлов:
+![FatSecret Dashboard Card](images/preview.png)
 
-- [`packages/fatsecret.yaml`](packages/fatsecret.yaml) — редактируемые цели и четыре сенсора прогресса.
-- [`dashboards/fatsecret-card.yaml`](dashboards/fatsecret-card.yaml) — Lovelace-карточка с калориями, БЖУ, нутриентами и суточным графиком.
+## Возможности
 
-## Установка
+- устанавливается и обновляется через HACS;
+- не требует Mushroom, ApexCharts или других frontend-зависимостей;
+- автоматически использует стандартные entity ID интеграции `ha-fatsecret`;
+- имеет визуальный редактор в Home Assistant;
+- показывает выполнение целей по калориям, белку, жирам и углеводам;
+- строит суточный SVG-график калорий по истории Recorder;
+- открывает стандартный more-info при нажатии на любой показатель;
+- адаптируется к desktop и мобильной ширине;
+- использует цвета и фон активной темы Home Assistant.
 
-1. Установите через HACS frontend-карточки **Mushroom** и **ApexCharts Card**.
-2. Скопируйте `packages/fatsecret.yaml` в `/config/packages/fatsecret.yaml`.
-3. Если packages ещё не включены, добавьте в `configuration.yaml`:
+## Требования
 
-   ```yaml
-   homeassistant:
-     packages: !include_dir_named packages
-   ```
+- установленная и настроенная интеграция
+  [`xplanes/ha-fatsecret`](https://github.com/xplanes/ha-fatsecret);
+- Home Assistant 2024.4 или новее;
+- HACS для автоматической установки.
 
-4. Выполните **Developer Tools → YAML → Check configuration**, затем перезапустите Home Assistant.
-5. Добавьте Manual card и вставьте содержимое `dashboards/fatsecret-card.yaml`.
+## Установка через HACS
 
-## Перед вставкой карточки
+[![Открыть репозиторий в HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=BrainDeLook&repository=ha-fatsecret-dashboard&category=plugin)
 
-Проверьте в **Developer Tools → States**, что интеграция создала сущности
-`sensor.calories`, `sensor.protein`, `sensor.carbohydrates` и `sensor.fat`.
-Home Assistant иногда добавляет суффикс (`_2`) при конфликте имён. В таком случае
-замените соответствующие entity ID в обоих YAML-файлах.
+Или вручную:
 
-График использует краткосрочную историю Recorder, потому что текущая версия
-`ha-fatsecret` не задаёт исходным сенсорам `state_class`. Убедитесь, что эти
-сущности не исключены из Recorder.
+1. Откройте **HACS → Dashboard**.
+2. В меню выберите **Custom repositories**.
+3. Добавьте `https://github.com/BrainDeLook/ha-fatsecret-dashboard` с типом **Dashboard**.
+4. Найдите **FatSecret Dashboard Card** и нажмите **Download**.
+5. Обновите страницу Home Assistant с очисткой кэша браузера.
 
-## Значения целей по умолчанию
+HACS устанавливает ресурс `ha-fatsecret-dashboard.js` автоматически.
 
-- 2200 ккал
-- 160 г белка
-- 250 г углеводов
-- 70 г жиров
+## Добавление карточки
 
-Все значения можно менять прямо на дашборде.
+Откройте нужный дашборд, нажмите **Edit dashboard → Add card** и выберите
+**FatSecret Dashboard**. Стандартные entity ID и цели уже заполнены; их можно
+изменить в визуальном редакторе.
+
+Минимальная YAML-конфигурация:
+
+```yaml
+type: custom:fatsecret-dashboard-card
+```
+
+Полный пример:
+
+```yaml
+type: custom:fatsecret-dashboard-card
+title: Питание сегодня
+calories_entity: sensor.calories
+protein_entity: sensor.protein
+carbohydrate_entity: sensor.carbohydrates
+fat_entity: sensor.fat
+fiber_entity: sensor.fiber
+sugar_entity: sensor.sugar
+sodium_entity: sensor.sodium
+potassium_entity: sensor.potassium
+cholesterol_entity: sensor.cholesterol
+calorie_goal: 2200
+protein_goal: 160
+carbohydrate_goal: 250
+fat_goal: 70
+show_graph: true
+show_details: true
+```
+
+Home Assistant может добавить суффикс вроде `_2`, если entity ID уже занят.
+В этом случае выберите фактические сущности через визуальный редактор карточки.
+
+## График
+
+Карточка запрашивает краткосрочную историю `sensor.calories` напрямую из
+Recorder через WebSocket API Home Assistant. Убедитесь, что сенсор калорий не
+исключён из Recorder. Если история недоступна, остальные показатели продолжат
+работать.
+
+## Дополнительные YAML helpers
+
+Файл [`packages/fatsecret.yaml`](packages/fatsecret.yaml) оставлен как
+опциональный пример редактируемых helpers и template-сенсоров прогресса. Для
+работы самой HACS-карточки он не нужен.
+
+Исходная составная версия на стандартных/custom Lovelace-карточках находится в
+[`dashboards/fatsecret-card.yaml`](dashboards/fatsecret-card.yaml).
+
+## Разработка
+
+```bash
+npm run build
+npm run check
+```
+
+Тестовый стенд: [`tests/preview.html`](tests/preview.html).
 
 ## Лицензия
 
