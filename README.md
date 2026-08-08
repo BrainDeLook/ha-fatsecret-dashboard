@@ -18,6 +18,7 @@ calorie history chart.
 - displays progress toward calorie, protein, fat, and carbohydrate goals;
 - can convert a configurable percentage of an active-calorie sensor into extra calories available for the current day;
 - builds a daily SVG calorie chart from Recorder history;
+- shows the recorded time and calorie total when a graph point is hovered or focused;
 - opens the standard more-info dialog when a metric is selected;
 - works in desktop and narrow dashboard columns without changing the horizontal macro layout;
 - follows the Home Assistant interface language for Russian and English, with English as the fallback for other languages;
@@ -102,6 +103,11 @@ The card requests the short-term history of `sensor.calories` directly from
 Home Assistant Recorder through the WebSocket API. Make sure the calorie sensor
 is not excluded from Recorder. Other metrics continue to work if history is
 unavailable.
+
+Hover a graph point, or focus it with the keyboard, to see when Home Assistant
+recorded that calorie change. This timestamp reflects the sensor update time;
+with a 15-minute FatSecret polling interval, it can be later than the actual
+meal.
 
 ## Optional YAML helpers
 
