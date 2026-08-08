@@ -59,4 +59,15 @@ assert.equal(card._calorieBudget().effectiveGoal, 2200);
 card._config.use_active_calories = false;
 assert.equal(card._calorieBudget().effectiveGoal, 2200);
 
-console.log("Active calorie budget calculations are valid");
+card._history = [
+  { time: new Date().setHours(7, 30, 0, 0), value: 320 },
+  { time: new Date().setHours(7, 45, 0, 0), value: 320 },
+  { time: new Date().setHours(10, 15, 0, 0), value: 510 },
+];
+const graph = card._graphTemplate(510, 2200);
+assert.equal((graph.match(/class="graph-point"/g) ?? []).length, 2);
+assert.match(graph, /data-value="320"/);
+assert.match(graph, /data-value="510"/);
+assert.match(graph, /class="point-tooltip"/);
+
+console.log("Card calculations and graph tooltips are valid");

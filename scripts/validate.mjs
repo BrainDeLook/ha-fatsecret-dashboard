@@ -22,6 +22,9 @@ for (const marker of [
   "active_calories_entity",
   "active_calories_credit_percent",
   "effectiveGoal: baseGoal + credit",
+  'class="graph-point"',
+  'class="point-tooltip"',
+  "toLocaleTimeString",
 ]) {
   if (!source.includes(marker)) {
     throw new Error(`Missing expected artifact marker: ${marker}`);
