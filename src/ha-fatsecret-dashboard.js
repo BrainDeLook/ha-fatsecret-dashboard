@@ -1,4 +1,4 @@
-const CARD_VERSION = "1.2.1";
+const CARD_VERSION = "1.2.2";
 const BRAND_GREEN = "#69be45";
 
 const DEFAULT_CONFIG = Object.freeze({
@@ -532,8 +532,8 @@ class FatSecretDashboardCard extends HTMLElement {
     const line = coords.length > 1 ? coords.join(" ") : `${left},${bottom} ${width - left},${bottom}`;
     const area = `${left},${bottom} ${line} ${width - left},${bottom}`;
     const goalY = y(goal).toFixed(1);
-    const tooltipWidth = 168;
-    const tooltipHeight = 30;
+    const tooltipWidth = 248;
+    const tooltipHeight = 46;
     const pointTemplates = changePoints
       .map((point) => {
         const pointX = x(point.time);
@@ -553,11 +553,10 @@ class FatSecretDashboardCard extends HTMLElement {
         return `
           <g class="graph-point" tabindex="0" aria-label="${escapeHtml(label)}"
             data-time="${escapeHtml(time)}" data-value="${Math.round(point.value)}">
-            <circle class="point-hit" cx="${pointX.toFixed(1)}" cy="${pointY.toFixed(1)}" r="12" />
-            <circle class="point-dot" cx="${pointX.toFixed(1)}" cy="${pointY.toFixed(1)}" r="4" />
+            <circle class="point-hit" cx="${pointX.toFixed(1)}" cy="${pointY.toFixed(1)}" r="16" />
             <g class="point-tooltip" transform="translate(${tooltipX.toFixed(1)} ${tooltipY.toFixed(1)})">
-              <rect width="${tooltipWidth}" height="${tooltipHeight}" rx="8" />
-              <text x="${tooltipWidth / 2}" y="19" text-anchor="middle">${escapeHtml(label)}</text>
+              <rect width="${tooltipWidth}" height="${tooltipHeight}" rx="11" />
+              <text x="${tooltipWidth / 2}" y="30" text-anchor="middle">${escapeHtml(label)}</text>
             </g>
           </g>`;
       })
@@ -668,12 +667,10 @@ class FatSecretDashboardCard extends HTMLElement {
       .goal-line { stroke:var(--divider-color); stroke-width:2; stroke-dasharray:7 7; }
       .graph-point { outline:none; cursor:help; }
       .point-hit { fill:transparent; }
-      .point-dot { fill:var(--accent); stroke:var(--ha-card-background, var(--card-background-color, #fff)); stroke-width:2; }
       .point-tooltip { opacity:0; pointer-events:none; transition:opacity .14s ease; }
       .point-tooltip rect { fill:var(--primary-text-color, #20242c); filter:drop-shadow(0 2px 4px rgba(0,0,0,.22)); }
-      .point-tooltip text { fill:var(--ha-card-background, var(--card-background-color, #fff)); font-size:12px; font-weight:700; }
+      .point-tooltip text { fill:var(--ha-card-background, var(--card-background-color, #fff)); font-size:20px; font-weight:700; }
       .graph-point:hover .point-tooltip,.graph-point:focus .point-tooltip { opacity:1; }
-      .graph-point:focus .point-dot { stroke:var(--primary-color, var(--accent)); stroke-width:4; }
       .details { display:grid; grid-template-columns:repeat(5, 1fr); gap:8px; margin-top:12px; }
       .detail { padding:11px; min-width:0; }
       .detail span,.detail strong { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }

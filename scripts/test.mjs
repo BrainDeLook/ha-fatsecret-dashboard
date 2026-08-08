@@ -69,5 +69,6 @@ assert.equal((graph.match(/class="graph-point"/g) ?? []).length, 2);
 assert.match(graph, /data-value="320"/);
 assert.match(graph, /data-value="510"/);
 assert.match(graph, /class="point-tooltip"/);
+assert.doesNotMatch(graph, /class="point-dot"/);
 
 console.log("Card calculations and graph tooltips are valid");
