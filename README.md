@@ -16,6 +16,7 @@ calorie history chart.
 - automatically uses the standard entity IDs provided by `ha-fatsecret`;
 - includes a visual editor in Home Assistant;
 - displays progress toward calorie, protein, fat, and carbohydrate goals;
+- can convert a configurable percentage of an active-calorie sensor into extra calories available for the current day;
 - builds a daily SVG calorie chart from Recorder history;
 - opens the standard more-info dialog when a metric is selected;
 - works in desktop and narrow dashboard columns without changing the horizontal macro layout;
@@ -72,6 +73,9 @@ sugar_entity: sensor.sugar
 sodium_entity: sensor.sodium
 potassium_entity: sensor.potassium
 cholesterol_entity: sensor.cholesterol
+use_active_calories: true
+active_calories_entity: sensor.active_calories
+active_calories_credit_percent: 50
 calorie_goal: 2200
 protein_goal: 160
 carbohydrate_goal: 250
@@ -79,6 +83,15 @@ fat_goal: 70
 show_graph: true
 show_details: true
 ```
+
+## Active calorie credit
+
+This optional calculator increases the daily calorie goal by a chosen share of
+the calories reported by any Home Assistant sensor. For example, with a base
+goal of `2200`, `640` active calories, and a `50%` credit, the effective goal is
+`2520` kcal. The remaining amount, progress ring, and chart goal line all use
+that effective goal. Disable `use_active_calories` to keep the original fixed
+goal.
 
 Home Assistant may append a suffix such as `_2` when an entity ID is already
 in use. In that case, select the actual entities in the card's visual editor.
