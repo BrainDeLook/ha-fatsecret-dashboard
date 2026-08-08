@@ -1,4 +1,4 @@
-const CARD_VERSION = "1.2.0";
+const CARD_VERSION = "1.2.1";
 const BRAND_GREEN = "#69be45";
 
 const DEFAULT_CONFIG = Object.freeze({
@@ -77,6 +77,7 @@ const TRANSLATIONS = Object.freeze({
     graphRange: "00:00 — now",
     graphLoading: "Loading…",
     graphAria: "Calories graph for today",
+    graphPoint: (time, value) => `${time} · ${value} kcal`,
     cardDescription: "FatSecret calories, macros, nutrients, and daily graph.",
   }),
   ru: Object.freeze({
@@ -132,6 +133,7 @@ const TRANSLATIONS = Object.freeze({
     graphRange: "00:00 — сейчас",
     graphLoading: "Загрузка…",
     graphAria: "График калорий за сегодня",
+    graphPoint: (time, value) => `${time} · ${value} ккал`,
     cardDescription: "Калории, БЖУ, нутриенты и график FatSecret за текущий день.",
   }),
 });
@@ -499,17 +501,67 @@ class FatSecretDashboardCard extends HTMLElement {
     const now = Date.now();
     const start = new Date();
     start.setHours(0, 0, 0, 0);
-    const points = [...this._history];
+    const historyPoints = this._history.filter(
+      (point) => point.time >= start.getTime() && point.time <= now,
+    );
+    const currentState = this._state(this._config.calories_entity);
+    const rawCurrentChangeTime = Date.parse(
+      currentState?.last_updated ?? currentState?.last_changed ?? "",
+    );
+    const currentChangeTime =
+      Number.isFinite(rawCurrentChangeTime) &&
+      rawCurrentChangeTime >= start.getTime() &&
+      rawCurrentChangeTime <= now
+        ? rawCurrentChangeTime
+        : now;
+    const points = [...historyPoints];
     if (currentValue !== null) points.push({ time: now, value: currentValue });
+    const changePoints = historyPoints.filter(
+      (point, index) => index === 0 || point.value !== historyPoints[index - 1].value,
+    );
+    if (
+      currentValue !== null &&
+      (!changePoints.length || changePoints.at(-1).value !== currentValue)
+    ) {
+      changePoints.push({ time: currentChangeTime, value: currentValue });
+    }
     const maxValue = Math.max(goal, currentValue ?? 0, ...points.map((p) => p.value), 1) * 1.08;
     const x = (time) => left + ((time - start.getTime()) / Math.max(now - start.getTime(), 1)) * (width - left * 2);
     const y = (value) => bottom - (value / maxValue) * (bottom - top);
-    const coords = points
-      .filter((point) => point.time >= start.getTime() && point.time <= now)
-      .map((point) => `${x(point.time).toFixed(1)},${y(point.value).toFixed(1)}`);
+    const coords = points.map((point) => `${x(point.time).toFixed(1)},${y(point.value).toFixed(1)}`);
     const line = coords.length > 1 ? coords.join(" ") : `${left},${bottom} ${width - left},${bottom}`;
     const area = `${left},${bottom} ${line} ${width - left},${bottom}`;
     const goalY = y(goal).toFixed(1);
+    const tooltipWidth = 168;
+    const tooltipHeight = 30;
+    const pointTemplates = changePoints
+      .map((point) => {
+        const pointX = x(point.time);
+        const pointY = y(point.value);
+        const tooltipX = clamp(pointX - tooltipWidth / 2, 2, width - tooltipWidth - 2);
+        const preferredY =
+          pointY > tooltipHeight + 12
+            ? pointY - tooltipHeight - 9
+            : pointY + 10;
+        const tooltipY = clamp(preferredY, 2, height - tooltipHeight - 2);
+        const time = new Date(point.time).toLocaleTimeString(this._language(), {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+        const label = t.graphPoint(time, Math.round(point.value));
+
+        return `
+          <g class="graph-point" tabindex="0" aria-label="${escapeHtml(label)}"
+            data-time="${escapeHtml(time)}" data-value="${Math.round(point.value)}">
+            <circle class="point-hit" cx="${pointX.toFixed(1)}" cy="${pointY.toFixed(1)}" r="12" />
+            <circle class="point-dot" cx="${pointX.toFixed(1)}" cy="${pointY.toFixed(1)}" r="4" />
+            <g class="point-tooltip" transform="translate(${tooltipX.toFixed(1)} ${tooltipY.toFixed(1)})">
+              <rect width="${tooltipWidth}" height="${tooltipHeight}" rx="8" />
+              <text x="${tooltipWidth / 2}" y="19" text-anchor="middle">${escapeHtml(label)}</text>
+            </g>
+          </g>`;
+      })
+      .join("");
 
     return `
       <section class="graph">
@@ -527,6 +579,7 @@ class FatSecretDashboardCard extends HTMLElement {
           <line class="goal-line" x1="${left}" x2="${width - left}" y1="${goalY}" y2="${goalY}" />
           <polygon points="${area}" fill="url(#fatsecret-area)" />
           <polyline points="${line}" fill="none" stroke="${BRAND_GREEN}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+          ${pointTemplates}
         </svg>
       </section>`;
   }
@@ -613,6 +666,14 @@ class FatSecretDashboardCard extends HTMLElement {
       .section-title small { color:var(--secondary-text-color); font-weight:400; }
       svg { display:block; width:100%; height:150px; margin-top:4px; overflow:visible; }
       .goal-line { stroke:var(--divider-color); stroke-width:2; stroke-dasharray:7 7; }
+      .graph-point { outline:none; cursor:help; }
+      .point-hit { fill:transparent; }
+      .point-dot { fill:var(--accent); stroke:var(--ha-card-background, var(--card-background-color, #fff)); stroke-width:2; }
+      .point-tooltip { opacity:0; pointer-events:none; transition:opacity .14s ease; }
+      .point-tooltip rect { fill:var(--primary-text-color, #20242c); filter:drop-shadow(0 2px 4px rgba(0,0,0,.22)); }
+      .point-tooltip text { fill:var(--ha-card-background, var(--card-background-color, #fff)); font-size:12px; font-weight:700; }
+      .graph-point:hover .point-tooltip,.graph-point:focus .point-tooltip { opacity:1; }
+      .graph-point:focus .point-dot { stroke:var(--primary-color, var(--accent)); stroke-width:4; }
       .details { display:grid; grid-template-columns:repeat(5, 1fr); gap:8px; margin-top:12px; }
       .detail { padding:11px; min-width:0; }
       .detail span,.detail strong { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
