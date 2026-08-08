@@ -1,4 +1,4 @@
-const CARD_VERSION = "1.1.1";
+const CARD_VERSION = "1.2.0";
 const BRAND_GREEN = "#69be45";
 
 const DEFAULT_CONFIG = Object.freeze({
@@ -12,6 +12,9 @@ const DEFAULT_CONFIG = Object.freeze({
   sodium_entity: "sensor.sodium",
   potassium_entity: "sensor.potassium",
   cholesterol_entity: "sensor.cholesterol",
+  use_active_calories: false,
+  active_calories_entity: "",
+  active_calories_credit_percent: 50,
   calorie_goal: 2200,
   protein_goal: 160,
   carbohydrate_goal: 250,
@@ -34,6 +37,10 @@ const TRANSLATIONS = Object.freeze({
       sodium_entity: "Sodium",
       potassium_entity: "Potassium",
       cholesterol_entity: "Cholesterol",
+      active_calories: "Active calorie credit",
+      use_active_calories: "Add active calories to the daily goal",
+      active_calories_entity: "Active calories sensor",
+      active_calories_credit_percent: "Calories credited, %",
       calorie_goal: "Calorie goal, kcal",
       protein_goal: "Protein goal, g",
       carbohydrate_goal: "Carbohydrate goal, g",
@@ -60,6 +67,9 @@ const TRANSLATIONS = Object.freeze({
     exceeded: (value) => `Exceeded by ${value} kcal`,
     goalValue: (goal) => `of ${goal} kcal`,
     goalProgress: (progress) => `${progress}% of goal`,
+    activeCalorieCredit: (credit, active, percent) =>
+      `+${credit} kcal available from ${active} active kcal (${percent}%)`,
+    activeCaloriesUnavailable: "Active calorie sensor has no data",
     noValue: "No data",
     caloriesAria: "Open calorie details",
     macrosAria: "Macronutrients",
@@ -82,6 +92,10 @@ const TRANSLATIONS = Object.freeze({
       sodium_entity: "Натрий",
       potassium_entity: "Калий",
       cholesterol_entity: "Холестерин",
+      active_calories: "Учёт активных калорий",
+      use_active_calories: "Добавлять активные калории к дневной цели",
+      active_calories_entity: "Сенсор активных калорий",
+      active_calories_credit_percent: "Зачислять активных калорий, %",
       calorie_goal: "Цель калорий, ккал",
       protein_goal: "Цель белка, г",
       carbohydrate_goal: "Цель углеводов, г",
@@ -108,6 +122,9 @@ const TRANSLATIONS = Object.freeze({
     exceeded: (value) => `Превышение на ${value} ккал`,
     goalValue: (goal) => `из ${goal} ккал`,
     goalProgress: (progress) => `${progress}% цели`,
+    activeCalorieCredit: (credit, active, percent) =>
+      `+${credit} ккал доступно из ${active} активных ккал (${percent}%)`,
+    activeCaloriesUnavailable: "Нет данных сенсора активных калорий",
     noValue: "Нет данных",
     caloriesAria: "Открыть сведения о калориях",
     macrosAria: "Макронутриенты",
@@ -128,6 +145,7 @@ const browserTranslation = () =>
 
 const ENTITY_FIELDS = [
   "calories_entity",
+  "active_calories_entity",
   "protein_entity",
   "carbohydrate_entity",
   "fat_entity",
@@ -204,6 +222,20 @@ class FatSecretDashboardCard extends HTMLElement {
         },
         {
           type: "expandable",
+          name: "active_calories",
+          title: strings.config.active_calories,
+          flatten: true,
+          schema: [
+            { name: "use_active_calories", selector: { boolean: {} } },
+            entitySelector("active_calories_entity"),
+            {
+              name: "active_calories_credit_percent",
+              selector: { number: { min: 0, max: 100, step: 1, mode: "slider" } },
+            },
+          ],
+        },
+        {
+          type: "expandable",
           name: "details",
           title: strings.config.details,
           flatten: true,
@@ -249,6 +281,7 @@ class FatSecretDashboardCard extends HTMLElement {
     let size = 5;
     if (this._config?.show_graph !== false) size += 4;
     if (this._config?.show_details !== false) size += 2;
+    if (this._config?.use_active_calories === true) size += 1;
     return size;
   }
 
@@ -293,6 +326,28 @@ class FatSecretDashboardCard extends HTMLElement {
     })}${unit ? ` ${unit}` : ""}`;
   }
 
+  _calorieBudget() {
+    const baseGoalValue = Number(this._config?.calorie_goal);
+    const baseGoal = Number.isFinite(baseGoalValue) && baseGoalValue > 0 ? baseGoalValue : 1;
+    const enabled = this._config?.use_active_calories === true;
+    const percentValue = Number(this._config?.active_calories_credit_percent);
+    const percent = clamp(Number.isFinite(percentValue) ? percentValue : 0, 0, 100);
+    const sensorValue = enabled
+      ? numberValue(this._state(this._config.active_calories_entity))
+      : null;
+    const activeCalories = sensorValue === null ? null : Math.max(sensorValue, 0);
+    const credit = activeCalories === null ? 0 : (activeCalories * percent) / 100;
+
+    return {
+      enabled,
+      activeCalories,
+      percent,
+      credit,
+      baseGoal,
+      effectiveGoal: baseGoal + credit,
+    };
+  }
+
   _showMoreInfo(entityId) {
     this.dispatchEvent(
       new CustomEvent("hass-more-info", {
@@ -323,7 +378,8 @@ class FatSecretDashboardCard extends HTMLElement {
     const t = this._t();
 
     const calories = numberValue(this._state(this._config.calories_entity));
-    const goal = Number(this._config.calorie_goal) || 1;
+    const budget = this._calorieBudget();
+    const goal = budget.effectiveGoal;
     const remaining = goal - (calories ?? 0);
     const calorieProgress = ((calories ?? 0) / goal) * 100;
     const status =
@@ -371,6 +427,19 @@ class FatSecretDashboardCard extends HTMLElement {
               <div class="eyebrow">FATSECRET</div>
               <h2>${escapeHtml(this._config.title?.trim() || t.title)}</h2>
               <p>${escapeHtml(status)}</p>
+              ${
+                budget.enabled
+                  ? `<p class="active-credit"${this._config.active_calories_entity ? ` data-entity="${escapeHtml(this._config.active_calories_entity)}"` : ""}>${escapeHtml(
+                      budget.activeCalories === null
+                        ? t.activeCaloriesUnavailable
+                        : t.activeCalorieCredit(
+                            Math.round(budget.credit),
+                            Math.round(budget.activeCalories),
+                            Math.round(budget.percent),
+                          ),
+                    )}</p>`
+                  : ""
+              }
             </div>
             <button class="calorie-ring" data-entity="${escapeHtml(this._config.calories_entity)}"
               style="--progress:${clamp(calorieProgress, 0, 100)}%"
@@ -523,6 +592,8 @@ class FatSecretDashboardCard extends HTMLElement {
       .eyebrow { color:var(--accent); font-size:11px; font-weight:800; letter-spacing:.18em; }
       h2 { margin:4px 0 3px; font-size:24px; line-height:1.2; }
       p { margin:0; color:var(--secondary-text-color); font-size:13px; }
+      .active-credit { margin-top:4px; color:var(--accent); font-size:11px; font-weight:600; }
+      .active-credit[data-entity] { cursor:pointer; }
       button { font:inherit; color:inherit; }
       .calorie-ring { width:118px; height:118px; flex:0 0 118px; border:0; border-radius:50%; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; background:conic-gradient(var(--accent) var(--progress), color-mix(in srgb, var(--divider-color) 45%, transparent) 0); }
       .calorie-ring::before { content:""; position:absolute; inset:9px; border-radius:50%; background:var(--ha-card-background, var(--card-background-color, #fff)); }

@@ -18,6 +18,10 @@ for (const marker of [
   "history/history_during_period",
   "const TRANSLATIONS",
   "grid-template-columns:repeat(3, 1fr)",
+  "use_active_calories",
+  "active_calories_entity",
+  "active_calories_credit_percent",
+  "effectiveGoal: baseGoal + credit",
 ]) {
   if (!source.includes(marker)) {
     throw new Error(`Missing expected artifact marker: ${marker}`);
