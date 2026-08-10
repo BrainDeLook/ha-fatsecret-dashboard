@@ -59,10 +59,14 @@ assert.equal(card._calorieBudget().effectiveGoal, 2200);
 card._config.use_active_calories = false;
 assert.equal(card._calorieBudget().effectiveGoal, 2200);
 
+const todayStart = new Date();
+todayStart.setHours(0, 0, 0, 0);
+const elapsedToday = Date.now() - todayStart.getTime();
+const historyStep = Math.max(1, Math.floor(elapsedToday / 4));
 card._history = [
-  { time: new Date().setHours(7, 30, 0, 0), value: 320 },
-  { time: new Date().setHours(7, 45, 0, 0), value: 320 },
-  { time: new Date().setHours(10, 15, 0, 0), value: 510 },
+  { time: todayStart.getTime() + historyStep, value: 320 },
+  { time: todayStart.getTime() + historyStep * 2, value: 320 },
+  { time: todayStart.getTime() + historyStep * 3, value: 510 },
 ];
 const graph = card._graphTemplate(510, 2200);
 assert.equal((graph.match(/class="graph-point"/g) ?? []).length, 2);
