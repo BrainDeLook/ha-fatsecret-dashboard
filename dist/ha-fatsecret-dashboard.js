@@ -1,6 +1,6 @@
-const CARD_VERSION = "1.3.0";
+const CARD_VERSION = "1.3.1";
 const BRAND_GREEN = "#69be45";
-const OVER_LIMIT_YELLOW = "#f4c542";
+const OVER_LIMIT_ORANGE = "#ff8a4c";
 
 const DEFAULT_CONFIG = Object.freeze({
   title: "",
@@ -455,8 +455,22 @@ class FatSecretDashboardCard extends HTMLElement {
               }
             </div>
             <button class="calorie-ring" data-entity="${escapeHtml(this._config.calories_entity)}"
-              style="--progress:${ringProgress.progress}%;--over-limit:${ringProgress.overLimit}%"
               aria-label="${escapeHtml(t.caloriesAria)}">
+              <svg class="ring-visual" viewBox="0 0 118 118" aria-hidden="true">
+                <circle class="ring-track" cx="59" cy="59" r="54.5" pathLength="100" />
+                ${
+                  ringProgress.progress > 0
+                    ? `<circle class="ring-progress" cx="59" cy="59" r="54.5" pathLength="100"
+                        stroke-dasharray="${ringProgress.progress} ${100 - ringProgress.progress}" />`
+                    : ""
+                }
+                ${
+                  ringProgress.overLimit > 0
+                    ? `<circle class="ring-over-limit" cx="59" cy="59" r="54.5" pathLength="100"
+                        stroke-dasharray="${ringProgress.overLimit} ${100 - ringProgress.overLimit}" />`
+                    : ""
+                }
+              </svg>
               <strong>${calories === null ? "—" : Math.round(calories)}</strong>
               <span>${escapeHtml(t.goalValue(Math.round(goal)))}</span>
             </button>
@@ -658,8 +672,13 @@ class FatSecretDashboardCard extends HTMLElement {
       .active-credit { margin-top:4px; color:var(--accent); font-size:11px; font-weight:600; }
       .active-credit[data-entity] { cursor:pointer; }
       button { font:inherit; color:inherit; }
-      .calorie-ring { width:118px; height:118px; flex:0 0 118px; border:0; border-radius:50%; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; background:conic-gradient(${OVER_LIMIT_YELLOW} 0 var(--over-limit), var(--accent) var(--over-limit) var(--progress), color-mix(in srgb, var(--divider-color) 45%, transparent) var(--progress)); }
-      .calorie-ring::before { content:""; position:absolute; inset:9px; border-radius:50%; background:var(--ha-card-background, var(--card-background-color, #fff)); }
+      .calorie-ring { width:118px; height:118px; flex:0 0 118px; padding:0; border:0; border-radius:50%; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; background:transparent; }
+      .ring-visual { position:absolute; inset:0; width:100%; height:100%; margin:0; overflow:visible; transform:rotate(-90deg); }
+      .ring-visual circle { fill:none; stroke-width:9; }
+      .ring-track { stroke:color-mix(in srgb, var(--divider-color) 45%, transparent); }
+      .ring-progress,.ring-over-limit { stroke-linecap:round; }
+      .ring-progress { stroke:var(--accent); }
+      .ring-over-limit { stroke:${OVER_LIMIT_ORANGE}; }
       .calorie-ring strong,.calorie-ring span { position:relative; z-index:1; }
       .calorie-ring strong { font-size:25px; line-height:1; }
       .calorie-ring span { margin-top:6px; color:var(--secondary-text-color); font-size:10px; }
