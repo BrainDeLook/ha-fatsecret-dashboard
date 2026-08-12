@@ -29,9 +29,13 @@
   </head>
   <body>
     <fatsecret-dashboard-card></fatsecret-dashboard-card>
-    <script type="module" src="../dist/ha-fatsecret-dashboard.js?v=1.2.2"></script>
+    <script type="module" src="../dist/ha-fatsecret-dashboard.js?v=1.3.0"></script>
     <script type="module">
-      const language = new URLSearchParams(location.search).get("lang") || "ru";
+      const params = new URLSearchParams(location.search);
+      const language = params.get("lang") || "ru";
+      const calories = Number(params.get("calories")) || 1486;
+      const calorieGoal = Number(params.get("goal")) || 2200;
+      const useActiveCalories = params.get("active") !== "0";
       document.documentElement.lang = language;
       const now = new Date();
       const at = (hour, minute, state) => {
@@ -46,7 +50,8 @@
       });
       const card = document.querySelector("fatsecret-dashboard-card");
       card.setConfig({
-        use_active_calories: true,
+        calorie_goal: calorieGoal,
+        use_active_calories: useActiveCalories,
         active_calories_entity: "sensor.active_calories",
         active_calories_credit_percent: 50,
       });
@@ -54,7 +59,7 @@
         locale: { language },
         language,
         states: {
-          "sensor.calories": state(1486, "kcal"),
+          "sensor.calories": state(calories, "kcal"),
           "sensor.active_calories": state(640, "kcal"),
           "sensor.protein": state(118, "g"),
           "sensor.carbohydrates": state(172, "g"),

@@ -22,6 +22,8 @@ for (const marker of [
   "active_calories_entity",
   "active_calories_credit_percent",
   "effectiveGoal: baseGoal + credit",
+  "--over-limit",
+  "#f4c542",
   'class="graph-point"',
   'class="point-tooltip"',
   "toLocaleTimeString",
