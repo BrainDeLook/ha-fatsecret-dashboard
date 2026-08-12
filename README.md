@@ -16,6 +16,7 @@ calorie history chart.
 - automatically uses the standard entity IDs provided by `ha-fatsecret`;
 - includes a visual editor in Home Assistant;
 - displays progress toward calorie, protein, fat, and carbohydrate goals;
+- overlays calories above the effective daily limit as a rounded orange arc on the calorie ring;
 - can convert a configurable percentage of an active-calorie sensor into extra calories available for the current day;
 - builds a daily SVG calorie chart from Recorder history;
 - shows the recorded time and calorie total when a graph point is hovered or focused;
