@@ -24,6 +24,7 @@ for (const marker of [
   "effectiveGoal: baseGoal + credit",
   'class="ring-over-limit"',
   'stroke-linecap:round',
+  'ring-visual .ring-over-limit { stroke:${OVER_LIMIT_ORANGE}; stroke-width:5; }',
   "#ff8a4c",
   'class="graph-point"',
   'class="point-tooltip"',

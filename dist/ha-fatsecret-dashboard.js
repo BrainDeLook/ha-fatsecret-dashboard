@@ -1,4 +1,4 @@
-const CARD_VERSION = "1.3.1";
+const CARD_VERSION = "1.3.2";
 const BRAND_GREEN = "#69be45";
 const OVER_LIMIT_ORANGE = "#ff8a4c";
 
@@ -678,7 +678,7 @@ class FatSecretDashboardCard extends HTMLElement {
       .ring-track { stroke:color-mix(in srgb, var(--divider-color) 45%, transparent); }
       .ring-progress,.ring-over-limit { stroke-linecap:round; }
       .ring-progress { stroke:var(--accent); }
-      .ring-over-limit { stroke:${OVER_LIMIT_ORANGE}; }
+      .ring-visual .ring-over-limit { stroke:${OVER_LIMIT_ORANGE}; stroke-width:5; }
       .calorie-ring strong,.calorie-ring span { position:relative; z-index:1; }
       .calorie-ring strong { font-size:25px; line-height:1; }
       .calorie-ring span { margin-top:6px; color:var(--secondary-text-color); font-size:10px; }
