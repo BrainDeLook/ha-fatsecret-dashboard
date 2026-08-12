@@ -59,6 +59,23 @@ assert.equal(card._calorieBudget().effectiveGoal, 2200);
 card._config.use_active_calories = false;
 assert.equal(card._calorieBudget().effectiveGoal, 2200);
 
+assert.deepEqual(card._calorieRingProgress(1100, 2200), {
+  progress: 50,
+  overLimit: 0,
+});
+assert.deepEqual(card._calorieRingProgress(2200, 2200), {
+  progress: 100,
+  overLimit: 0,
+});
+assert.deepEqual(card._calorieRingProgress(2750, 2200), {
+  progress: 100,
+  overLimit: 25,
+});
+assert.deepEqual(card._calorieRingProgress(4400, 2200), {
+  progress: 100,
+  overLimit: 100,
+});
+
 const todayStart = new Date();
 todayStart.setHours(0, 0, 0, 0);
 const elapsedToday = Date.now() - todayStart.getTime();
